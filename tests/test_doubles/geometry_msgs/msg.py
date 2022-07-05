@@ -1,0 +1,5 @@
+class Pose:
+    """"""
+
+class TransformStamped:
+    """"""

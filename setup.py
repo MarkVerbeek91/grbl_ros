@@ -1,35 +1,21 @@
-from glob import glob
-import os
+"""
+    Setup file for grbl_ros.
+    Use setup.cfg to configure your project.
 
-import setuptools
+    This file was generated with PyScaffold 4.2.3.
+    PyScaffold helps you to put up the scaffold of your new Python project.
+    Learn more under: https://pyscaffold.org/
+"""
+from setuptools import setup
 
-package_name = 'grbl_ros'
-
-setuptools.setup(
-    name=package_name,
-    version='0.0.16',
-    packages=[package_name],
-    data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
-        (os.path.join('share', package_name, 'config'), glob('config/*.yaml'))
-    ],
-    install_requires=[
-        'pyserial',
-    ],
-    zip_safe=True,
-    maintainer='Evan Flynn',
-    maintainer_email='evanflynn.msu@gmail.com',
-    description='ROS2 package to interface with a GRBL serial device',
-    license='MIT',
-    tests_require=['pytest'],
-    entry_points={
-        'console_scripts': [
-            'grbl_node = grbl_ros.device:main',
-            'grbl_service = grbl_ros.service:main',
-            'grbl_manager = grbl_ros.manager:main'
-        ],
-    },
-)
+if __name__ == "__main__":
+    try:
+        setup(use_scm_version={"version_scheme": "no-guess-dev"})
+    except:  # noqa
+        print(
+            "\n\nAn error occurred while building the project, "
+            "please ensure you have the most updated version of setuptools, "
+            "setuptools_scm and wheel with:\n"
+            "   pip install -U setuptools setuptools_scm wheel\n\n"
+        )
+        raise

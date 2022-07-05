@@ -25,7 +25,7 @@ from geometry_msgs.msg import Pose
 from grbl_msgs.action import SendGcodeCmd, SendGcodeFile
 from grbl_msgs.msg import State
 from grbl_msgs.srv import Stop
-from grbl_ros import grbl
+from grbl_ros.grbl import grbl
 
 import rclpy
 from rclpy.action import ActionClient, ActionServer
@@ -49,7 +49,7 @@ class grbl_node(Node):
 
     def __init__(self):
         # TODO(evanflynn): init node with machine_id param input or arg
-        super().__init__('grbl_device')
+        super(grbl_node, self).__init__('grbl_device')
 
         self.get_logger().info('Declaring ROS parameters')
         self.declare_parameters(
@@ -85,36 +85,36 @@ class grbl_node(Node):
         self.action_done_event = Event()
         self.callback_group = ReentrantCallbackGroup()
         self.action_send_gcode_ = ActionServer(
-                self,
-                SendGcodeCmd,
-                self.machine_id + '/send_gcode_cmd',
-                self.gcodeCallback)
+            self,
+            SendGcodeCmd,
+            self.machine_id + '/send_gcode_cmd',
+            self.gcodeCallback)
         self.action_send_gcode_file_ = ActionServer(
-                self,
-                SendGcodeFile,
-                self.machine_id + '/send_gcode_file',
-                self.streamCallback)
+            self,
+            SendGcodeFile,
+            self.machine_id + '/send_gcode_file',
+            self.streamCallback)
         self.action_client_send_gcode_ = ActionClient(
-                self,
-                SendGcodeCmd,
-                self.machine_id + '/send_gcode_cmd', callback_group=self.callback_group)
+            self,
+            SendGcodeCmd,
+            self.machine_id + '/send_gcode_cmd', callback_group=self.callback_group)
 
         self.action_done_event = Event()
 
         self.get_logger().info('Getting ROS parameters')
         port = self.get_parameter('port')
         baud = self.get_parameter('baudrate')
-        acc = self.get_parameter('acceleration')    # axis acceleration (mm/s^2)
-        max_x = self.get_parameter('x_max')           # workable travel (mm)
-        max_y = self.get_parameter('y_max')           # workable travel (mm)
-        max_z = self.get_parameter('x_max')           # workable travel (mm)
-        default_speed = self.get_parameter('default_v')   # mm/min
-        speed_x = self.get_parameter('x_max_v')     # mm/min
-        speed_y = self.get_parameter('y_max_v')     # mm/min
-        speed_z = self.get_parameter('z_max_v')     # mm/min
-        steps_x = self.get_parameter('x_steps')      # axis steps per mm
-        steps_y = self.get_parameter('y_steps')      # axis steps per mm
-        steps_z = self.get_parameter('z_steps')      # axis steps per mm
+        acc = self.get_parameter('acceleration')  # axis acceleration (mm/s^2)
+        max_x = self.get_parameter('x_max')  # workable travel (mm)
+        max_y = self.get_parameter('y_max')  # workable travel (mm)
+        max_z = self.get_parameter('x_max')  # workable travel (mm)
+        default_speed = self.get_parameter('default_v')  # mm/min
+        speed_x = self.get_parameter('x_max_v')  # mm/min
+        speed_y = self.get_parameter('y_max_v')  # mm/min
+        speed_z = self.get_parameter('z_max_v')  # mm/min
+        steps_x = self.get_parameter('x_steps')  # axis steps per mm
+        steps_y = self.get_parameter('y_steps')  # axis steps per mm
+        steps_z = self.get_parameter('z_steps')  # axis steps per mm
 
         self.get_logger().warn('  machine_id: ' + str(self.machine_id))
         self.get_logger().warn('  port:       ' + str(port.get_parameter_value().string_value))
@@ -137,7 +137,7 @@ class grbl_node(Node):
                              steps_x.get_parameter_value().integer_value,
                              steps_y.get_parameter_value().integer_value,
                              steps_z.get_parameter_value().integer_value)
-        if(self.machine.s):
+        if (self.machine.s):
             self.machine.getStatus()
             self.machine.getSettings()
         else:
@@ -173,16 +173,16 @@ class grbl_node(Node):
         """
         result = SendGcodeCmd.Result()
         status = self.machine.send(str(goal_handle.request.command))
-        if(status.find('error') > -1):
+        if (status.find('error') > -1):
             # grbl device returned error code
             # decode error
             self.decode_error(status)
             result.success = False
-        elif(status.find('ok') > -1):
+        elif (status.find('ok') > -1):
             # grbl device running command
             # check state
             self.machine.send(str('?'))
-            if(self.machine.state.name.upper() == self.machine.STATE.RUN.name):
+            if (self.machine.state.name.upper() == self.machine.STATE.RUN.name):
                 # machine still running command
                 # wait until machine is idle
                 status_msg = SendGcodeCmd.Feedback()
@@ -193,8 +193,8 @@ class grbl_node(Node):
                     status_msg.status = 'Running ' + str(goal_handle.request.command)
                     goal_handle.publish_feedback(status_msg)
             # elif(self.machine.state.name.upper() == self.machine.STATE.ALARM.name):
-                # machine alarm is still active
-                # self.get_logger().warn('ALARM')
+            # machine alarm is still active
+            # self.get_logger().warn('ALARM')
             goal_handle.succeed()
             result.success = True
         else:
@@ -228,7 +228,7 @@ class grbl_node(Node):
             status_msg = SendGcodeFile.Feedback()
             # send gcode line to action server
             send_goal_future = self.action_client_send_gcode_.send_goal_async(
-                    gcode_msg, feedback_callback=self.file_feedback)
+                gcode_msg, feedback_callback=self.file_feedback)
             send_goal_future.add_done_callback(self.line_response_callback)
             # wait for send gcode action to be done
             self.action_done_event.wait()
@@ -237,7 +237,7 @@ class grbl_node(Node):
 
             # dont send another line until its done running
             status_msg.status = '[ ' + str(line_num) + ' / ' + str(file_length) + \
-                ' ] Running ' + str(line)
+                                ' ] Running ' + str(line)
             goal_handle.publish_feedback(status_msg)
             line_num += 1
 
