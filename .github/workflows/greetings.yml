@@ -11,4 +11,3 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         issue-message: 'Thank you for creating your first issue on this repo! Give me some time to review and respond to your problem.'
         pr-message: 'Thankyou for creating your first PR! Contributions like yours is what it is all about. Keep it up!'
-

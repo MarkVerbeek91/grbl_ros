@@ -34,24 +34,24 @@ class logging(object):
     def getStatus(self):
         """Get the current status of the GRBL device."""
         # TODO(evanflynn): status should be ROS msg?
-        if(self.mode == self.MODE.NORMAL):
+        if self.mode == self.MODE.NORMAL:
             # ? returns the active GRBL state & current machine and work positions
-            return self.send('?')
-        elif(self.mode == self.MODE.DEBUG):
-            return 'DEBUG GRBL device is happy!'
+            return self.send("?")
+        elif self.mode == self.MODE.DEBUG:
+            return "DEBUG GRBL device is happy!"
         else:
-            return 'UNDEFINED GRBL MODE'
+            return "UNDEFINED GRBL MODE"
 
     def getSettings(self):
         """Get the current settings of the GRBL device."""
         # TODO(evanflynn): status should be ROS msg?
-        if(self.mode == self.MODE.NORMAL):
+        if self.mode == self.MODE.NORMAL:
             # ? returns the active GRBL state & current machine and work positions
-            return self.send('$$')
-        elif(self.mode == self.MODE.DEBUG):
-            return 'DEBUG GRBL device is happy!'
+            return self.send("$$")
+        elif self.mode == self.MODE.DEBUG:
+            return "DEBUG GRBL device is happy!"
         else:
-            return 'UNDEFINED GRBL MODE'
+            return "UNDEFINED GRBL MODE"
 
     def getPose(self):
         """Get the last Pose recorded of the GRBL device."""
@@ -69,10 +69,10 @@ class logging(object):
         return pose
 
     def decodeStatus(self, status):
-        if('error' in status):
-            err = status.split(':', 1)[1]
-            if(type(err) == int()):
-                return self.STATUS(int(status.split(':', 1)[1])).name
+        if "error" in status:
+            err = status.split(":", 1)[1]
+            if type(err) == int():
+                return self.STATUS(int(status.split(":", 1)[1])).name
             else:
                 return err
         else:
@@ -106,14 +106,22 @@ class logging(object):
         """
 
         NO_ERROR = 0
-        MISSING_LETTER = 1  # G-code words consist of a letter and a value. Letter not found
-        INVALID_NUMERIC = 2  # Numeric value format is not valid or missing an expected value
-        COMMAND_NOT_SUPPORTED = 3  # Grbl '$' system command was not recognized or supported
+        MISSING_LETTER = (
+            1  # G-code words consist of a letter and a value. Letter not found
+        )
+        INVALID_NUMERIC = (
+            2  # Numeric value format is not valid or missing an expected value
+        )
+        COMMAND_NOT_SUPPORTED = (
+            3  # Grbl '$' system command was not recognized or supported
+        )
         NEGATIVE_POSITION = 4  # Negtaive value received for an expected positive value
         DISABLED_HOMING = 5  # Homing cycle is not enabled via settings
         MIN_STEP_TOO_SMALL = 6  # must be larger than 3usec
         EEPROM_READ_FAIL = 7  # EEPROM read failed. Reset and restored to default values
         GRBL_NOT_IDLE = 8  # Grbl '$' cmd cannot be used unless Grbl is IDLE
         LOCKED_OUT = 9  # G-code locked out during alarm or jog state
-        HOMING_NOT_ENABLED = 10  # Soft limits cannot be enabled without homing also enabled
+        HOMING_NOT_ENABLED = (
+            10  # Soft limits cannot be enabled without homing also enabled
+        )
         MAX_CHARS_PER_LINE = 11  #

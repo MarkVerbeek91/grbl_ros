@@ -32,26 +32,26 @@ class configure(object):
 
     def setOrigin(self, x=0, y=0, z=0):
         # set current position to be (0,0,0), or a custom (x,y,z)
-        gcode = 'G92 x{} y{} z{}\n'.format(x, y, z)
+        gcode = "G92 x{} y{} z{}\n".format(x, y, z)
         self.send(self, gcode)
         # update our internal location
         self.pos = [x, y, z]
 
     def clearAlarm(self):
         """Clear the alarm on the GRBL machine."""
-        return self.send(self, r'\$X')
+        return self.send(self, r"\$X")
 
     def enableSteppers(self):
         """Enable the motors on the GRBL machine."""
-        return self.send(self, 'M17')
+        return self.send(self, "M17")
 
     def feedHold(self):
         """Feed hold the GRBL machine."""
-        return self.send(self, r'\!')
+        return self.send(self, r"\!")
 
     def disableSteppers(self):
         """Disable the motors on the GRBL machine."""
-        return self.send(self, 'M17')
+        return self.send(self, "M17")
 
     def ensureMovementMode(self, absoluteMode=True):
         # GRBL has two movement modes
@@ -60,7 +60,7 @@ class configure(object):
             return
         self.abs_move = absoluteMode
         if absoluteMode:
-            self.s.write(b'G90\r\n')  # absolute movement mode
+            self.s.write(b"G90\r\n")  # absolute movement mode
         else:
-            self.s.write(b'G91\r\n')  # relative movement mode
+            self.s.write(b"G91\r\n")  # relative movement mode
             self.s.readline()

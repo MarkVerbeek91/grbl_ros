@@ -17,31 +17,29 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from grbl_interfaces.srv import CreateDevice
-
 import rclpy
-
+from grbl_interfaces.srv import CreateDevice
 from rclpy.node import Node
 
-node_name = 'grbl_services'
+node_name = "grbl_services"
 
 
 class grbl_service(Node):
-
     def __init__(self):
         super().__init__(node_name)
 
-        self.get_logger().info('Initializing GRBL Device Services')
+        self.get_logger().info("Initializing GRBL Device Services")
         self.srv_create_ = self.create_service(
-            CreateDevice, node_name + '/create_grbl_device', self.create_callback)
+            CreateDevice, node_name + "/create_grbl_device", self.create_callback
+        )
 
     def create_callback(self, request, response):
-        self.get_logger().warn('creating grbl device:')
-        self.get_logger().warn('    machine id: ' + request.machine_id)
-        self.get_logger().warn('    port:       ' + request.port)
+        self.get_logger().warn("creating grbl device:")
+        self.get_logger().warn("    machine id: " + request.machine_id)
+        self.get_logger().warn("    port:       " + request.port)
 
     def shutdown_callback(self, request, response):
-        self.get_logger().info('shutting down grbl device')
+        self.get_logger().info("shutting down grbl device")
 
 
 def main():
@@ -52,5 +50,5 @@ def main():
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

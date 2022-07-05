@@ -20,8 +20,9 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
 from launch_ros.actions import Node
+
+from launch import LaunchDescription
 
 
 def generate_launch_description():
@@ -29,15 +30,12 @@ def generate_launch_description():
 
     # TODO(evanflynn): add a for loop here to loop over each YAML file
     config = os.path.join(
-        get_package_share_directory('grbl_ros'),
-        'config',
-        'cnc001.yaml')
+        get_package_share_directory("grbl_ros"), "config", "cnc001.yaml"
+    )
 
     node = Node(
-        package='grbl_ros',
-        name='cnc_001',
-        executable='grbl_node',
-        parameters=[config])
+        package="grbl_ros", name="cnc_001", executable="grbl_node", parameters=[config]
+    )
 
     ld.add_action(node)
     return ld

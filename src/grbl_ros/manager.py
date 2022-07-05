@@ -17,31 +17,28 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from grbl_interfaces.srv import CreateDevice
-
 import rclpy
-
+from grbl_interfaces.srv import CreateDevice
 from rclpy.node import Node
 
-node_name = 'grbl_manager'
+node_name = "grbl_manager"
 
 
 class grbl_manager(Node):
-
     def __init__(self):
         super().__init__(node_name)
 
-        self.get_logger().info('Initializing GRBL Device Manager')
-        self.cli = self.create_client(CreateDevice, 'grbl_services/create_grbl_device')
+        self.get_logger().info("Initializing GRBL Device Manager")
+        self.cli = self.create_client(CreateDevice, "grbl_services/create_grbl_device")
         while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().warn('service not available, waiting again...')
+            self.get_logger().warn("service not available, waiting again...")
         self.req = CreateDevice.Request()
         # self.srv_delete_ = self.create_service(String, 'shutdown_grbl_device', shutdown_callback)
 
     def send_request(self):
-        self.get_logger().warn('creating grbl device:')
-        self.get_logger().warn('    machine id: ' + 'cnc_111')
-        self.get_logger().warn('    port:       ' + '/tmp/ttyFAKE')
+        self.get_logger().warn("creating grbl device:")
+        self.get_logger().warn("    machine id: " + "cnc_111")
+        self.get_logger().warn("    port:       " + "/tmp/ttyFAKE")
 
 
 def main():
@@ -55,13 +52,12 @@ def main():
         rclpy.spin_once(manager_node)
         if manager_node.future.done():
             response = manager_node.future.result()
-        manager_node.get_logger().info(
-            'Result of create_device: ' + response.success)
+        manager_node.get_logger().info("Result of create_device: " + response.success)
         break
 
     manager_node.destroy_node()
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

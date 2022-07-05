@@ -23,19 +23,31 @@ Functions to command the GRBL device.
 The grbl device command functions
 """
 
-from geometry_msgs.msg import Pose
-from geometry_msgs.msg import TransformStamped
-
-from grbl_msgs.msg import State
-
 import serial
+from geometry_msgs.msg import Pose, TransformStamped
+from grbl_msgs.msg import State
 
 
 class command(object):
     """Command class to hold all command functions for the grbl device class."""
 
-    def startup(self, machine_id, port, baud, acc, maxx, maxy, maxz,
-                spdf, spdx, spdy, spdz, stepsx, stepsy, stepsz):
+    def startup(
+        self,
+        machine_id,
+        port,
+        baud,
+        acc,
+        maxx,
+        maxy,
+        maxz,
+        spdf,
+        spdx,
+        spdy,
+        spdz,
+        stepsx,
+        stepsy,
+        stepsz,
+    ):
         """
         Startup the GRBL machine with the specified parameters.
 
@@ -80,7 +92,7 @@ class command(object):
             # set movement to Absolute coordinates
             self.ensureMovementMode(True)
             # try to get current position
-            self.send('?')
+            self.send("?")
             # start homing procedure
             # TODO(flynneva): should this be done at startup?
             # should probably be configurable by user if they want to or not
@@ -113,39 +125,39 @@ class command(object):
 
         """
         # TODO(evanflynn): need to add some input checking to make sure its valid GCODE
-        if(len(gcode) > 0):
+        if len(gcode) > 0:
             responses = []
-            if(self.mode == self.MODE.NORMAL):
-                self.s.write(str.encode(gcode + '\n'))
+            if self.mode == self.MODE.NORMAL:
+                self.s.write(str.encode(gcode + "\n"))
                 # wait until receive response with EOL character
-                r = self.s.readline().decode('utf-8').strip()
-                if(len(r) > 0):
+                r = self.s.readline().decode("utf-8").strip()
+                if len(r) > 0:
                     responses.append(r)
                 # check to see if there are more lines in waiting
-                while (self.s.inWaiting() > 0):
-                    responses.append(self.s.readline().decode('utf-8').strip())
+                while self.s.inWaiting() > 0:
+                    responses.append(self.s.readline().decode("utf-8").strip())
                 self.handle_responses(responses, gcode)
                 # last response should always be the state of grbl
                 return responses[-1]
-            elif(self.mode == self.MODE.DEBUG):
+            elif self.mode == self.MODE.DEBUG:
                 # in debug mode just return the GCODE that was input
-                return 'Sent: ' + gcode
+                return "Sent: " + gcode
         else:
-            return 'MISSING_GCODE'
+            return "MISSING_GCODE"
 
     def handle_responses(self, responses, cmd):
         # iterate over each response line
         for line in responses:
-            if(line.find('ok') == -1):
-                self.node.get_logger().info('[ ' + str(cmd) + ' ] ' + str(line))
+            if line.find("ok") == -1:
+                self.node.get_logger().info("[ " + str(cmd) + " ] " + str(line))
             # check if line is grbl status report
-            if(line[0] == '<'):
+            if line[0] == "<":
                 self.parse_status(line)
 
     def parse_status(self, status):
         try:
             # seperate fields using pipe delimeter |
-            fields = status.split('|')
+            fields = status.split("|")
             # clean first and last field of '<>'
             fields[0] = fields[0][1:]
             last_field = len(fields) - 1
@@ -164,21 +176,23 @@ class command(object):
             self.node.pub_state_.publish(state_msg)
         except IndexError:
             self.node.get_logger().warn(
-                'Received status from machine does not have required fields')
+                "Received status from machine does not have required fields"
+            )
             self.node.get_logger().warn(
-                'Status should always include machine state and current position')
-            self.node.get_logger().warn('Received: %s'.format(status))
+                "Status should always include machine state and current position"
+            )
+            self.node.get_logger().warn("Received: {0}".format(status))
 
     def handle_current_pose(self, pose):
         transforms = []
         machine_tf = TransformStamped()
-        machine_tf.header.frame_id = 'base_link'
+        machine_tf.header.frame_id = "base_link"
         machine_tf.header.stamp = self.node.get_clock().now().to_msg()
-        machine_tf.child_frame_id = self.machine_id + '_machine'
+        machine_tf.child_frame_id = self.machine_id + "_machine"
         machine_pose = Pose()
 
         # parse coordinates from current position
-        coords = pose.split(':')[1].split(',')
+        coords = pose.split(":")[1].split(",")
         x = float(coords[0]) / 1000.0
         y = float(coords[1]) / 1000.0
         z = float(coords[2]) / 1000.0
@@ -201,39 +215,39 @@ class command(object):
         state_msg.header.stamp = self.node.get_clock().now().to_msg()
         state_msg.header.frame_id = self.machine_id
         # TODO(flynneva): should probably be a switch/case?
-        if(state.upper() == self.STATE.IDLE.name):
+        if state.upper() == self.STATE.IDLE.name:
             state_msg.state = self.STATE.IDLE
             state_msg.state_name = self.STATE.IDLE.name
             self.state = self.STATE.IDLE
-        elif(state.upper() == self.STATE.RUN.name):
+        elif state.upper() == self.STATE.RUN.name:
             state_msg.state = self.STATE.RUN
             state_msg.state_name = self.STATE.RUN.name
             self.state = self.STATE.RUN
-        elif(state.upper() == self.STATE.ALARM.name):
+        elif state.upper() == self.STATE.ALARM.name:
             state_msg.state = self.STATE.ALARM
             state_msg.state_name = self.STATE.ALARM.name
             self.state = self.STATE.ALARM
-        elif(state.upper() == self.STATE.JOG.name):
+        elif state.upper() == self.STATE.JOG.name:
             state_msg.state = self.STATE.JOG
             state_msg.state_name = self.STATE.JOG.name
             self.state = self.STATE.JOG
-        elif(state.upper() == self.STATE.HOLD.name):
+        elif state.upper() == self.STATE.HOLD.name:
             state_msg.state = self.STATE.HOLD
             state_msg.state_name = self.STATE.HOLD.name
             self.state = self.STATE.HOLD
-        elif(state.upper() == self.STATE.DOOR.name):
+        elif state.upper() == self.STATE.DOOR.name:
             state_msg.state = self.STATE.DOOR
             state_msg.state_name = self.STATE.DOOR.name
             self.state = self.STATE.DOOR
-        elif(state.upper() == self.STATE.CHECK.name):
+        elif state.upper() == self.STATE.CHECK.name:
             state_msg.state = self.STATE.CHECK
             state_msg.state_name = self.STATE.CHECK.name
             self.state = self.STATE.CHECK
-        elif(state.upper() == self.STATE.HOME.name):
+        elif state.upper() == self.STATE.HOME.name:
             state_msg.state = self.STATE.HOME
             state_msg.state_name = self.STATE.HOME.name
             self.state = self.STATE.HOME
-        elif(state.upper() == self.STATE.SLEEP.name):
+        elif state.upper() == self.STATE.SLEEP.name:
             state_msg.state = self.STATE.SLEEP
             state_msg.state_name = self.STATE.SLEEP.name
             self.state = self.STATE.SLEEP
@@ -252,10 +266,10 @@ class command(object):
             str: status of sending the file
 
         """
-        f = open(fpath, 'r')
+        f = open(fpath, "r")
         for raw_line in f:
             line = raw_line.strip()  # strip all EOL characters for consistency
             status = self.send(line)
-            if(self.mode == self.MODE.DEBUG):
-                print('    ' + status)
-        return 'ok'
+            if self.mode == self.MODE.DEBUG:
+                print("    " + status)
+        return "ok"
